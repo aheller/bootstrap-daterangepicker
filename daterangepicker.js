@@ -1,34 +1,34 @@
 /**
-* @version: 1.3.18
-* @author: Dan Grossman http://www.dangrossman.info/
-* @copyright: Copyright (c) 2012-2015 Dan Grossman. All rights reserved.
-* @license: Licensed under the MIT license. See http://www.opensource.org/licenses/mit-license.php
-* @website: https://www.improvely.com/
-*/
+ * @version: 1.3.18
+ * @author: Dan Grossman http://www.dangrossman.info/
+ * @copyright: Copyright (c) 2012-2015 Dan Grossman. All rights reserved.
+ * @license: Licensed under the MIT license. See http://www.opensource.org/licenses/mit-license.php
+ * @website: https://www.improvely.com/
+ */
 
 (function(root, factory) {
 
-  if (typeof define === 'function' && define.amd) {
-    define(['moment', 'jquery', 'exports'], function(momentjs, $, exports) {
-      root.daterangepicker = factory(root, exports, momentjs, $);
-    });
+    if (typeof define === 'function' && define.amd) {
+        define(['moment', 'jquery', 'exports'], function(momentjs, $, exports) {
+            root.daterangepicker = factory(root, exports, momentjs, $);
+        });
 
-  } else if (typeof exports !== 'undefined') {
-    var momentjs = require('moment');
-    var jQuery;
-    try {
-      jQuery = require('jquery');
-    } catch (err) {
-      jQuery = window.jQuery;
-      if (!jQuery) throw new Error('jQuery dependency not found');
+    } else if (typeof exports !== 'undefined') {
+        var momentjs = require('moment');
+        var jQuery;
+        try {
+            jQuery = require('jquery');
+        } catch (err) {
+            jQuery = window.jQuery;
+            if (!jQuery) throw new Error('jQuery dependency not found');
+        }
+
+        factory(root, exports, momentjs, jQuery);
+
+        // Finally, as a browser global.
+    } else {
+        root.daterangepicker = factory(root, {}, root.moment, (root.jQuery || root.Zepto || root.ender || root.$));
     }
-
-    factory(root, exports, momentjs, jQuery);
-
-  // Finally, as a browser global.
-  } else {
-    root.daterangepicker = factory(root, {}, root.moment, (root.jQuery || root.Zepto || root.ender || root.$));
-  }
 
 }(this, function(root, daterangepicker, moment, $) {
 
@@ -45,23 +45,23 @@
 
         //create the picker HTML object
         var DRPTemplate = '<div class="daterangepicker dropdown-menu">' +
-                '<div class="calendar first left"></div>' +
-                '<div class="calendar second right"></div>' +
-                '<div class="ranges">' +
-                  '<div class="range_inputs">' +
-                    '<div class="daterangepicker_start_input">' +
-                      '<label for="daterangepicker_start"></label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_start" value="" />' +
-                    '</div>' +
-                    '<div class="daterangepicker_end_input">' +
-                      '<label for="daterangepicker_end"></label>' +
-                      '<input class="input-mini" type="text" name="daterangepicker_end" value="" />' +
-                    '</div>' +
-                    '<button class="applyBtn" disabled="disabled"></button>&nbsp;' +
-                    '<button class="cancelBtn"></button>' +
-                  '</div>' +
-                '</div>' +
-              '</div>';
+            '<div class="calendar first left"></div>' +
+            '<div class="calendar second right"></div>' +
+            '<div class="ranges">' +
+            '<div class="range_inputs">' +
+            '<div class="daterangepicker_start_input">' +
+            '<label for="daterangepicker_start"></label>' +
+            '<input class="input-mini" type="text" name="daterangepicker_start" value="" />' +
+            '</div>' +
+            '<div class="daterangepicker_end_input">' +
+            '<label for="daterangepicker_end"></label>' +
+            '<input class="input-mini" type="text" name="daterangepicker_end" value="" />' +
+            '</div>' +
+            '<button class="applyBtn" disabled="disabled"></button>&nbsp;' +
+            '<button class="cancelBtn"></button>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
 
         //custom options
         if (typeof options !== 'object' || options === null)
@@ -132,7 +132,7 @@
             this.minDate = false;
             this.maxDate = false;
             this.dateLimit = false;
-
+            this.autoApply = false;
             this.showDropdowns = false;
             this.showWeekNumbers = false;
             this.timePicker = false;
@@ -215,35 +215,35 @@
                 }
 
                 if (typeof options.locale.monthNames === 'object') {
-                  this.locale.monthNames = options.locale.monthNames.slice();
+                    this.locale.monthNames = options.locale.monthNames.slice();
                 }
 
                 if (typeof options.locale.firstDay === 'number') {
-                  this.locale.firstDay = options.locale.firstDay;
+                    this.locale.firstDay = options.locale.firstDay;
                 }
 
                 if (typeof options.locale.applyLabel === 'string') {
-                  this.locale.applyLabel = options.locale.applyLabel;
+                    this.locale.applyLabel = options.locale.applyLabel;
                 }
 
                 if (typeof options.locale.cancelLabel === 'string') {
-                  this.locale.cancelLabel = options.locale.cancelLabel;
+                    this.locale.cancelLabel = options.locale.cancelLabel;
                 }
 
                 if (typeof options.locale.fromLabel === 'string') {
-                  this.locale.fromLabel = options.locale.fromLabel;
+                    this.locale.fromLabel = options.locale.fromLabel;
                 }
 
                 if (typeof options.locale.toLabel === 'string') {
-                  this.locale.toLabel = options.locale.toLabel;
+                    this.locale.toLabel = options.locale.toLabel;
                 }
 
                 if (typeof options.locale.weekLabel === 'string') {
-                  this.locale.weekLabel = options.locale.weekLabel;
+                    this.locale.weekLabel = options.locale.weekLabel;
                 }
 
                 if (typeof options.locale.customRangeLabel === 'string') {
-                  this.locale.customRangeLabel = options.locale.customRangeLabel;
+                    this.locale.customRangeLabel = options.locale.customRangeLabel;
                 }
             }
 
@@ -288,6 +288,9 @@
             if (typeof options.timePicker12Hour === 'boolean') {
                 this.timePicker12Hour = options.timePicker12Hour;
             }
+
+            if (typeof options.autoApply === 'boolean')
+                this.autoApply = options.autoApply;
 
             // update day names order to firstDay
             if (this.locale.firstDay != 0) {
@@ -381,6 +384,17 @@
                 this.startDate = this.startDate.startOf('day');
                 this.endDate = this.endDate.endOf('day');
             }
+
+            //can't be used together for now
+            if (this.timePicker && this.autoApply)
+                this.autoApply = false;
+
+            if (this.autoApply && typeof options.ranges !== 'object') {
+                this.container.find('.ranges').hide();
+            } else if (this.autoApply) {
+                this.container.find('.applyBtn, .cancelBtn').addClass('hide');
+            }
+
 
             if (this.singleDatePicker) {
                 this.opens = 'right';
@@ -563,7 +577,7 @@
                 this.container.css({
                     top: this.element.offset().top + this.element.outerHeight() - parentOffset.top,
                     left: this.element.offset().left - parentOffset.left + this.element.outerWidth() / 2
-                            - this.container.outerWidth() / 2,
+                    - this.container.outerWidth() / 2,
                     right: 'auto'
                 });
                 if (this.container.offset().left < 0) {
@@ -572,7 +586,7 @@
                         left: 9
                     });
                 }
-            } else if (this.opens == 'embed') {                
+            } else if (this.opens == 'embed') {
                 this.element.parent().append(this.container);
                 this.element.hide();
             } else {
@@ -609,13 +623,13 @@
             this._outsideClickProxy = $.proxy(function (e) { this.outsideClick(e); }, this);
             // Bind global datepicker mousedown for hiding and
             $(document)
-              .on('mousedown.daterangepicker', this._outsideClickProxy)
-              // also support mobile devices
-              .on('touchend.daterangepicker', this._outsideClickProxy)
-              // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
-              .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
-              // and also close when focus changes to outside the picker (eg. tabbing between controls)
-              .on('focusin.daterangepicker', this._outsideClickProxy);
+                .on('mousedown.daterangepicker', this._outsideClickProxy)
+                // also support mobile devices
+                .on('touchend.daterangepicker', this._outsideClickProxy)
+                // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
+                .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
+                // and also close when focus changes to outside the picker (eg. tabbing between controls)
+                .on('focusin.daterangepicker', this._outsideClickProxy);
 
             this.isShowing = true;
             this.element.trigger('show.daterangepicker', this);
@@ -627,11 +641,11 @@
             // itself then call this.hide()
             if (
                 // ie modal dialog fix
-                e.type == "focusin" ||
-                target.closest(this.element).length ||
-                target.closest(this.container).length ||
-                target.closest('.calendar-date').length
-                ) return;
+            e.type == "focusin" ||
+            target.closest(this.element).length ||
+            target.closest(this.container).length ||
+            target.closest('.calendar-date').length
+            ) return;
             this.hide();
         },
 
@@ -639,7 +653,7 @@
             if (!this.isShowing || (this.opens == 'embed')) return;
 
             $(document)
-              .off('.daterangepicker');
+                .off('.daterangepicker');
 
             this.element.removeClass('active');
             this.container.hide();
@@ -778,7 +792,7 @@
                 var difference = this.endDate.diff(this.startDate);
                 endDate = moment(startDate).add(difference, 'ms');
                 if (this.maxDate && endDate.isAfter(this.maxDate)) {
-                  endDate = this.maxDate;
+                    endDate = this.maxDate;
                 }
             }
             this.startDate = startDate;
@@ -832,6 +846,10 @@
 
             if (this.singleDatePicker && !this.timePicker)
                 this.clickApply();
+
+            if (this.autoApply) {
+                this.clickApply();
+            }
         },
 
         clickApply: function (e) {
