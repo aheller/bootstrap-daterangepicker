@@ -946,6 +946,7 @@
 
             this.updateView();
             this.updateCalendars();
+            this.element.trigger('apply.daterangepicker', this);
         },
 
         updateCalendars: function () {
