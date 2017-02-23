@@ -141,6 +141,10 @@
             this.timePicker12Hour = true;
             this.singleDatePicker = false;
             this.ranges = {};
+            this.startDateDisabled = false;
+            this.startDateToggleDisabled = false;
+            this.endDateDisabled = false;
+            this.endDateToggleDisabled = false;
 
             this.opens = 'right';
             if (this.element.hasClass('pull-right'))
@@ -292,6 +296,16 @@
             if (typeof options.autoApply === 'boolean')
                 this.autoApply = options.autoApply;
 
+            if (typeof options.startDateToggleDisabled === 'boolean')
+                this.startDateToggleDisabled = options.startDateToggleDisabled;
+            if (typeof options.startDateDisabled === 'boolean')
+                this.startDateDisabled = options.startDateDisabled;
+            if (typeof options.endDateToggleDisabled === 'boolean')
+                this.endDateToggleDisabled = options.endDateToggleDisabled;
+            if (typeof options.endDateDisabled === 'boolean')
+                this.endDateDisabled = options.endDateDisabled;
+
+
             // update day names order to firstDay
             if (this.locale.firstDay != 0) {
                 var iterator = this.locale.firstDay;
@@ -386,8 +400,8 @@
             }
 
             //can't be used together for now
-            if (this.timePicker && this.autoApply)
-                this.autoApply = false;
+            //if (this.timePicker && this.autoApply)
+            //    this.autoApply = false;
 
             if (this.autoApply && typeof options.ranges !== 'object') {
                 this.container.find('.ranges').hide();
@@ -952,8 +966,38 @@
         updateCalendars: function () {
             this.leftCalendar.calendar = this.buildCalendar(this.leftCalendar.month.month(), this.leftCalendar.month.year(), this.leftCalendar.month.hour(), this.leftCalendar.month.minute(), this.leftCalendar.month.second(), 'left');
             this.rightCalendar.calendar = this.buildCalendar(this.rightCalendar.month.month(), this.rightCalendar.month.year(), this.rightCalendar.month.hour(), this.rightCalendar.month.minute(), this.rightCalendar.month.second(), 'right');
-            this.container.find('.calendar.left').empty().html(this.renderCalendar(this.leftCalendar.calendar, this.startDate, this.minDate, this.maxDate, 'left'));
-            this.container.find('.calendar.right').empty().html(this.renderCalendar(this.rightCalendar.calendar, this.endDate, this.singleDatePicker ? this.minDate : this.startDate, this.maxDate, 'right'));
+            var calendarLeftElem = this.container.find('.calendar.left');
+            var calendarRightElem = this.container.find('.calendar.right');
+            calendarLeftElem.empty().html(this.renderCalendar(this.leftCalendar.calendar, this.startDate, this.minDate, this.maxDate, 'left'));
+            calendarRightElem.empty().html(this.renderCalendar(this.rightCalendar.calendar, this.endDate, this.singleDatePicker ? this.minDate : this.startDate, this.maxDate, 'right'));
+
+            var picker = this;
+            var toggleDisabledClass = function(elem) {
+                elem.find('.calendar-date,.calendar-time').toggleClass('disabled');
+            };
+
+            if(this.startDateToggleDisabled) {
+                var leftToggledDisabledCheckbox = calendarLeftElem.find('.js-switch')[0];
+                new Switchery(leftToggledDisabledCheckbox, { size: 'small', color: '#ddd' });
+                if(picker.startDateDisabled)
+                    toggleDisabledClass(calendarLeftElem);
+                leftToggledDisabledCheckbox.onchange = function() {
+                    toggleDisabledClass(calendarLeftElem);
+                    picker.startDateDisabled = !leftToggledDisabledCheckbox.checked;
+                    picker.element.trigger('apply.daterangepicker', picker);
+                };
+            }
+            if(this.endDateToggleDisabled) {
+                var rightToggledDisabledCheckbox = calendarRightElem.find('.js-switch')[0];
+                new Switchery(rightToggledDisabledCheckbox, { size: 'small', color: '#ddd' });
+                if(picker.endDateDisabled)
+                    toggleDisabledClass(calendarRightElem);
+                rightToggledDisabledCheckbox.onchange = function() {
+                    toggleDisabledClass(calendarRightElem);
+                    picker.endDateDisabled = !rightToggledDisabledCheckbox.checked;
+                    picker.element.trigger('apply.daterangepicker', picker);
+                };
+            }
 
             this.container.find('.ranges li').removeClass('active');
             var customRange = true;
@@ -1279,7 +1323,12 @@
 
             }
 
-            return html;
+            if (side == 'left' && this.startDateToggleDisabled)
+                html += '<div class="toggle-disabled"><input type="checkbox" class="js-switch" '+(this.startDateDisabled ? '' : 'checked')+' /></div>';
+            else if (side == 'right' && this.endDateToggleDisabled)
+                html += '<div class="toggle-disabled"><input type="checkbox" class="js-switch" '+(this.endDateDisabled ? '' : 'checked')+' /></div>';
+
+           return html;
 
         },
 
