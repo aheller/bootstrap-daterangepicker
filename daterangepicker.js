@@ -918,7 +918,6 @@
         },
 
         updateTime: function(e) {
-
             var cal = $(e.target).closest('.calendar'),
                 isLeft = cal.hasClass('left');
 
@@ -1207,10 +1206,16 @@
                     min_hour = minDate.hour();
                     if (selected.hour() < min_hour)
                         selected.hour(min_hour);
-                    if (this.timePicker12Hour && min_hour >= 12 && selected.hour() >= 12)
-                        min_hour -= 12;
-                    if (this.timePicker12Hour && min_hour == 12)
-                        min_hour = 1;
+                    if(this.timePicker12Hour) {
+                        if (selected.hour() >= 12) {
+                            if (min_hour >= 12)
+                                min_hour -= 12;
+                            else
+                                min_hour = 1;
+                        }
+                        if (min_hour == 12)
+                            min_hour = 1;
+                    }
                 }
 
                 if (maxDate && (side == 'right' || this.singleDatePicker) && selected.format('YYYY-MM-DD') == maxDate.format('YYYY-MM-DD')) {
@@ -1232,7 +1237,6 @@
                     if (selected_hour === 0)
                         selected_hour = 12;
                 }
-
                 for (i = start; i <= end; i++) {
 
                     if (i == selected_hour) {
